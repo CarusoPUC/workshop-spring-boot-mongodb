@@ -1,6 +1,7 @@
 package com.marcosdecastro.workshopmongo.resources;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.marcosdecastro.workshopmongo.domain.Post;
 import com.marcosdecastro.workshopmongo.domain.User;
 import com.marcosdecastro.workshopmongo.dto.UserDTO;
 import com.marcosdecastro.workshopmongo.services.UserService;
@@ -30,49 +32,56 @@ public class UserResource {
 	@GetMapping
 	public ResponseEntity<List<UserDTO>> findAll() {
 		List<User> list = service.findAll();
-		
+
 		List<UserDTO> listDto = list.stream().map(x -> new UserDTO(x)).collect(Collectors.toList());
-		
+
 		return ResponseEntity.ok().body(listDto);
 	}
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<UserDTO> findById(@PathVariable String id){
+	public ResponseEntity<UserDTO> findById(@PathVariable String id) {
 		User user = service.findById(id);
-		
+
 		return ResponseEntity.ok().body(new UserDTO(user));
 	}
-	
+
 	@PostMapping
-	public ResponseEntity<Void> insert(@RequestBody UserDTO userDto){
-		
+	public ResponseEntity<Void> insert(@RequestBody UserDTO userDto) {
+
 		User user = service.fromDTO(userDto);
 		user = service.insert(user);
-		
+
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(user.getId()).toUri();
-		
+
 		return ResponseEntity.created(uri).build();
-		
+
 	}
-	
+
 	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<Void> delete(@PathVariable String id){
-		
+	public ResponseEntity<Void> delete(@PathVariable String id) {
+
 		service.delete(id);
-		
+
 		return ResponseEntity.noContent().build();
 	}
-	
-	@PutMapping(value= "{id}")
-	public ResponseEntity<Void> update(@RequestBody UserDTO userDto, @PathVariable String id){
-		
+
+	@PutMapping(value = "{id}")
+	public ResponseEntity<Void> update(@RequestBody UserDTO userDto, @PathVariable String id) {
+
 		User user = service.fromDTO(userDto);
 		user.setId(id);
-		
+
 		user = service.update(user);
-		
+
 		return ResponseEntity.noContent().build();
-		
+
 	}
-			
+
+	@GetMapping(value = "/{id}/posts")
+	public ResponseEntity<List<Post>> findPosts(@PathVariable String id) {
+		User obj = service.findById(id);
+		
+		return ResponseEntity.ok().body(obj.getPosts());
+	}
+
 }
